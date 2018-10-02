@@ -1,0 +1,13 @@
+// Simple Col Box Example.jsl
+nw = new window("Col Box Example",
+	tb = table box(
+		cb = col box("Sample Text",
+			tb1 = text box("Hello"),
+			tb2 = text box("World")
+		)
+	)
+);
+
+// Format the text boxes
+tb1 << font color("Dark Green") << set font("Times New Roman", 24, "bold");
+tb2 << font color("Dark Red") << set font("Broadway", 24, "italic");

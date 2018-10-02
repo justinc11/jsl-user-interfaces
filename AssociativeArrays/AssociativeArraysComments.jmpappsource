@@ -1,0 +1,595 @@
+﻿JMP App(
+	Set Name( "Associative Arrays" ),
+	Auto Launch( 1 ),
+	Snap To Grid( 1 ),
+	Show Grid( 1 ),
+	Parameters,
+	Tables,
+	Script(JSL Quote(// This script is executed when the application is run.
+// Named objects have been created for the application modules
+// (for example, "Module1") and the pre-defined object
+// "thisApplication" refers to the application object itself.
+// Variables and functions declared here are scoped to the
+// Application namespace.
+
+)	),
+	Allocate(
+		Module1 = Plan(
+			PreAllocate,
+			Script(JSL Quote(// This script is executed when a new module instance is
+// created.  The pre-defined object "thisModuleInstance" refers
+// to the instance object, but other objects such as boxes and
+// scripts have not yet been created.  Variables declared here are
+// scoped to the ModuleInstance namespace.
+
+// This special function will receive parameters passed to CreateInstance()
+OnModuleLoad({},
+);
+
+thisModuleInstance << Create Objects;
+
+// After this point your module instance objects have been created
+// and can be referred to by name (for example, "Button1").
+
+assessment_cb       << set heading("Assessment");
+
+return_comment_teb   << set nlines(6);
+general_comment_teb << set nlines(20);
+
+product_lb    << set selected(1, 1) << set width(110) << set height(165);
+one_product   = "Tomato";
+prev_product  = "Tomato";
+return_panel  << set title("Select the desired " || one_product || " return reason");
+assessment_cb << set heading(one_product || " Assessment");
+
+// Use an associative array to store the return checkboxes for each product name
+n_return     = nitems(return_cb << get items());
+empty_list   = j(n_return, 1, 0);		// Create a one-dimensional matrix of 0s
+return_aa    = associative array();
+product_list = product_lb << get items;
+
+return_comment_aa = associative array();
+
+for (i = 1, i <= nitems(product_list), i++,
+	one_product = product_list[i];
+	return_aa[one_product] = empty_list;
+	return_comment_aa[one_product] = "";	// Blank comments to start
+);
+//print(return_aa);
+
+// Use an associative array to store the assessment checkboxes for each product name
+n_assess      = nitems(assessment_cb << get items());
+empty_list    = j(n_assess, 1, 0);		// Create a one-dimensional matrix of 0s
+assessment_aa = associative array();
+product_list  = product_lb << get items;
+
+for (i = 1, i <= nitems(product_list), i++,
+	one_product = product_list[i];
+	assessment_aa[one_product] = empty_list;
+);
+//print(assessment_aa);
+
+
+// ----------------------------------------------------------------------------
+// This function is called when the product List Box selection changes
+product_lbSelect=Function({this},{selectedIndex},
+
+	one_product_list = this << get selected;
+	if (nitems(one_product_list) > 0,
+		one_product = one_product_list[1];
+
+		return_panel  << set title("Select the desired " || one_product || " return reason");
+		assessment_cb << set heading(one_product || " Assessment");
+
+		for (i = 1, i <= n_assess, i++,
+			assessment_cb << set(i, assessment_aa[one_product][i]);
+		);
+
+		for (i = 1, i <= n_return, i++,
+			return_cb << set(i, return_aa[one_product][i]);
+		);
+		
+		return_comment_aa[prev_product] = return_comment_teb << get text();
+		prev_product = one_product;
+		return_comment_teb << set text(return_comment_aa[one_product]);
+	);
+//print(return_aa);
+//print(assessment_aa);
+);
+
+
+// ----------------------------------------------------------------------------
+assessment_cbChange=Function({this, index},{selected},
+
+// See what the product name is
+	one_product_list = product_lb << get selected;
+	if (nitems(one_product_list) > 0,
+		one_product = one_product_list[1];
+	);
+
+	one_checked     = this << get(index);	// Get the text of the recently checked or unchecked checkbox
+	all_assessments = this << get items();	// Get all of the assessment texts
+	one_assessment  = all_assessments[index];
+	one_assessment  = "[" || one_product || "]" || " " || one_assessment;
+
+	general_comments = general_comment_teb << get text();
+
+// Save the checkbox status for this product name/assessment element
+	assessment_aa[one_product][index] = one_checked;
+
+	if (one_checked,
+// If checked add the comment in
+		if (general_comments == "",
+			general_comment_teb << set text(one_assessment);
+			,
+			general_comment_teb << set text(general_comments || "\!N" || one_assessment);
+		);
+	,
+// If unchecked find the comment and remove it.
+		comment_loc = contains(general_comments, one_assessment);
+		if (comment_loc,
+			comment_len = length(one_assessment);
+			new_comments = substr(general_comments, 1, (comment_loc - 1)) ||
+							substr(general_comments, (comment_loc + 1 + comment_len));
+			general_comment_teb << set text(new_comments);
+		);
+	);
+
+);
+
+
+// ----------------------------------------------------------------------------
+// This function is called when the return check box selection changes
+return_cbChange=Function({this, index},{selected},
+	one_product_list = product_lb << get selected;
+	if (nitems(one_product_list) > 0,
+		one_product = one_product_list[1];
+	);
+
+	one_checked = this << get(index);	// Get the text of the recently checked or unchecked checkbox
+
+// Save the checkbox status for this product name/return element
+	return_aa[one_product][index] = one_checked;
+);
+
+// Push the Cancel button
+cancel_buttonPress=Function({this},
+	this << close window;
+);
+
+// Push the OK button
+ok_buttonPress=Function({this},
+
+	this << close window;
+);
+
+// ----------------------------------------------------------------------------
+)			),
+			Allocate(
+				List2 = V List Box();
+				Panel1 = Panel Box();
+				List1 = H List Box();
+				ok_button = Button Box();
+				cancel_button = Button Box();
+				List3 = H List Box();
+				Panel2 = Panel Box();
+				product_lb = List Box();
+				Panel3 = Panel Box();
+				process_tab = Tab Box();
+				List5 = H List Box();
+				return_panel = Panel Box();
+				List6 = V List Box();
+				return_cb = Check Box();
+				Text4 = Text Box();
+				return_comment_teb = Text Edit Box();
+				assessment_tbox = Table Box();
+				assessment_cb = Check Box();
+				Text1 = Text Box();
+				general_comment_teb = Text Edit Box();
+			),
+			Organize(
+				Reparent( List2( general_comment_teb ) );
+				Reparent( List2( Text1 ) );
+				Reparent( assessment_tbox( assessment_cb ) );
+				Reparent(
+					process_tab(
+						"Assessment",
+						Tip( "" ),
+						Icon( "" ),
+						Closeable( 0 ),
+						assessment_tbox
+					)
+				);
+				Reparent( return_panel( return_comment_teb ) );
+				Reparent( return_panel( Text4 ) );
+				Reparent( List6( return_cb ) );
+				Reparent( return_panel( List6 ) );
+				Reparent( List5( return_panel ) );
+				Reparent(
+					process_tab(
+						"Returns",
+						Tip( "" ),
+						Icon( "" ),
+						Closeable( 0 ),
+						List5
+					)
+				);
+				Reparent( Panel3( process_tab ) );
+				Reparent( List3( Panel3 ) );
+				Reparent( Panel2( product_lb ) );
+				Reparent( List3( Panel2 ) );
+				Reparent( List2( List3 ) );
+				Reparent( List1( cancel_button ) );
+				Reparent( List1( ok_button ) );
+				Reparent( Panel1( List1 ) );
+				Reparent( List2( Panel1 ) );
+				Relocate( List2( 0, 0 ) );
+			),
+			Initialize(
+				List2 << Vertical Alignment( "Default" );
+				List2 << Background Color( 2147483647 );
+				List2 << Text Color( 2147483647 );
+				List2 << Visibility( "Visible" );
+				List2 << Padding( {Left( 2 ), Top( 0 ), Right( 2 ), Bottom( 0 )} );
+				List2 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List2 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List2 << Horizontal Alignment( "Default" );
+				List2 << set horizontal( 0 );
+				Panel1 << Vertical Alignment( "Default" );
+				Panel1 << Background Color( 2147483647 );
+				Panel1 << Text Color( 2147483647 );
+				Panel1 << Visibility( "Visible" );
+				Panel1 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Horizontal Alignment( "Default" );
+				Panel1 << Set Title( "Actions" );
+				List1 << Vertical Alignment( "Default" );
+				List1 << Background Color( 2147483647 );
+				List1 << Text Color( 2147483647 );
+				List1 << Visibility( "Visible" );
+				List1 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Horizontal Alignment( "Default" );
+				List1 << set horizontal( 1 );
+				ok_button << Vertical Alignment( "Default" );
+				ok_button << Background Color( 2147483647 );
+				ok_button << Text Color( 2147483647 );
+				ok_button << Visibility( "Visible" );
+				ok_button << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				ok_button << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				ok_button << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				ok_button << Horizontal Alignment( "Default" );
+				ok_button << Set Button Name( "OK" );
+				ok_button << Underline Style( 0 );
+				ok_button << Set Icon( "Go" );
+				ok_button << Set Icon Location( "Right" );
+				ok_button << Set Function( ok_buttonPress );
+				ok_button << Set Min Size( 60, 23 );
+				ok_button << Set Max Size( 60, 23 );
+				ok_button << Set Auto Stretching( ., . );
+				cancel_button << Vertical Alignment( "Default" );
+				cancel_button << Background Color( 2147483647 );
+				cancel_button << Text Color( 2147483647 );
+				cancel_button << Visibility( "Visible" );
+				cancel_button << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				cancel_button << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				cancel_button << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				cancel_button << Horizontal Alignment( "Default" );
+				cancel_button << Set Button Name( "Cancel" );
+				cancel_button << Underline Style( 0 );
+				cancel_button << Set Icon( "Stop" );
+				cancel_button << Set Icon Location( "Right" );
+				cancel_button << Set Function( cancel_buttonPress );
+				cancel_button << Set Min Size( 66, 23 );
+				cancel_button << Set Max Size( 66, 23 );
+				cancel_button << Set Auto Stretching( ., . );
+				List3 << Vertical Alignment( "Default" );
+				List3 << Background Color( 2147483647 );
+				List3 << Text Color( 2147483647 );
+				List3 << Visibility( "Visible" );
+				List3 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Horizontal Alignment( "Default" );
+				List3 << set horizontal( 1 );
+				Panel2 << Vertical Alignment( "Default" );
+				Panel2 << Background Color( 2147483647 );
+				Panel2 << Text Color( 2147483647 );
+				Panel2 << Visibility( "Visible" );
+				Panel2 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Horizontal Alignment( "Default" );
+				Panel2 << Set Title( "Product Name" );
+				product_lb << Vertical Alignment( "Default" );
+				product_lb << Background Color( 2147483647 );
+				product_lb << Text Color( 2147483647 );
+				product_lb << Visibility( "Visible" );
+				product_lb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Horizontal Alignment( "Default" );
+				product_lb << Set Items(
+					{"Tomato", "Peach", "Cantaloupe", "Squash", "Watermelon",
+					"Carrot", "Lettuce", "Cucumber"}
+				);
+				product_lb << Set Max Selected( 1 );
+				product_lb << Set Size( 93, 148 );
+				product_lb << Set N Lines( 8 );
+				product_lb << Set Function( product_lbSelect );
+				product_lb << Set Min Size( 93, 148 );
+				product_lb << Set Max Size( 93, 148 );
+				product_lb << Set Auto Stretching( ., . );
+				Panel3 << Vertical Alignment( "Default" );
+				Panel3 << Background Color( 2147483647 );
+				Panel3 << Text Color( 2147483647 );
+				Panel3 << Visibility( "Visible" );
+				Panel3 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel3 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel3 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel3 << Horizontal Alignment( "Default" );
+				Panel3 << Set Title( "" );
+				process_tab << Vertical Alignment( "Default" );
+				process_tab << Background Color( 2147483647 );
+				process_tab << Text Color( 2147483647 );
+				process_tab << Visibility( "Visible" );
+				process_tab << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				process_tab << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				process_tab << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				process_tab << Horizontal Alignment( "Default" );
+				process_tab << Set Selected( 1 );
+				process_tab << Set Style( "Tab" );
+				process_tab << Set Tab Close( Empty() );
+				process_tab << Set Tab Close Tip( "" );
+				process_tab << Set Tab New( Empty() );
+				process_tab << Set Tab New Tip( "" );
+				process_tab << Set Tab New Icon( "" );
+				process_tab << Show Tabs( 1 );
+				process_tab << SetTabChanged( Empty() );
+				List5 << Vertical Alignment( "Default" );
+				List5 << Background Color( 2147483647 );
+				List5 << Text Color( 2147483647 );
+				List5 << Visibility( "Visible" );
+				List5 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List5 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List5 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List5 << Horizontal Alignment( "Default" );
+				List5 << set horizontal( 1 );
+				return_panel << Vertical Alignment( "Default" );
+				return_panel << Background Color( 2147483647 );
+				return_panel << Text Color( 2147483647 );
+				return_panel << Visibility( "Visible" );
+				return_panel << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Horizontal Alignment( "Default" );
+				return_panel << Set Title( "Select the desired return reason" );
+				List6 << Vertical Alignment( "Default" );
+				List6 << Background Color( 2147483647 );
+				List6 << Text Color( 2147483647 );
+				List6 << Visibility( "Visible" );
+				List6 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List6 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List6 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List6 << Horizontal Alignment( "Default" );
+				List6 << set horizontal( 0 );
+				return_cb << Vertical Alignment( "Default" );
+				return_cb << Background Color( 2147483647 );
+				return_cb << Text Color( 2147483647 );
+				return_cb << Visibility( "Visible" );
+				return_cb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_cb << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				return_cb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_cb << Horizontal Alignment( "Default" );
+				return_cb << Set Items(
+					{"Rotten", "Past sell-by date", "Funny smell", "Discolorations",
+					"Insect parts found", "Moldy", "Broken parts", "Gone to seed",
+					"Other"}
+				);
+				return_cb << Set Function( return_cbChange );
+				return_cb << Set Min Size( 122, 153 );
+				return_cb << Set Max Size( 122, 153 );
+				return_cb << Set Auto Stretching( ., . );
+				Text4 << Vertical Alignment( "Default" );
+				Text4 << Background Color( 2147483647 );
+				Text4 << Text Color( 2147483647 );
+				Text4 << Visibility( "Visible" );
+				Text4 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text4 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text4 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text4 << Horizontal Alignment( "Default" );
+				Text4 << Set Text( "Return Comment:" );
+				Text4 << Bullet point( 0 );
+				Text4 << Font Color( 0 );
+				Text4 << Justify Text( "Left" );
+				Text4 << Rotate Text( "Horizontal" );
+				Text4 << Set Width( -1 );
+				Text4 << Set Wrap( 360 );
+				Text4 << Set Tip( "" );
+				Text4 << Set Min Size( 105, 18 );
+				Text4 << Set Max Size( 105, 18 );
+				Text4 << Set Auto Stretching( ., . );
+				return_comment_teb << Vertical Alignment( "Default" );
+				return_comment_teb << Background Color( 2147483647 );
+				return_comment_teb << Text Color( 2147483647 );
+				return_comment_teb << Visibility( "Visible" );
+				return_comment_teb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_comment_teb << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_comment_teb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_comment_teb << Horizontal Alignment( "Default" );
+				return_comment_teb << Set Text( "" );
+				return_comment_teb << Bullet point( 0 );
+				return_comment_teb << Font Color( 0 );
+				return_comment_teb << Justify Text( "Left" );
+				return_comment_teb << Rotate Text( "Horizontal" );
+				return_comment_teb << Set Width( 600 );
+				return_comment_teb << Set Wrap( 600 );
+				return_comment_teb << Set Tip( "" );
+				return_comment_teb << Set Lock( 0 );
+				return_comment_teb << Set PW Style( 0 );
+				return_comment_teb << Set Hint( "" );
+				return_comment_teb << Set Min Size( 600, 23 );
+				return_comment_teb << Set Max Size( 600, 23 );
+				return_comment_teb << Set Auto Stretching( ., . );
+				assessment_tbox << Vertical Alignment( "Default" );
+				assessment_tbox << Background Color( 2147483647 );
+				assessment_tbox << Text Color( 2147483647 );
+				assessment_tbox << Visibility( "Visible" );
+				assessment_tbox << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				assessment_tbox << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				assessment_tbox << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				assessment_tbox << Horizontal Alignment( "Default" );
+				assessment_tbox << Set Underline Headings( 0 );
+				assessment_tbox << Set Shade Headings( 1 );
+				assessment_tbox << Set Column Borders( 0 );
+				assessment_tbox << Set Row Borders( 0 );
+				assessment_tbox << Set Shade Alternate Rows( 0 );
+				assessment_tbox << Set Shade Cells( 0 );
+				assessment_tbox << Set Selectable Rows( 0 );
+				assessment_tbox << Set Selected Row Color( 2147483647 );
+				assessment_tbox << Set Locked Columns( 0 );
+				assessment_cb << Vertical Alignment( "Default" );
+				assessment_cb << Background Color( 2147483647 );
+				assessment_cb << Text Color( 2147483647 );
+				assessment_cb << Visibility( "Visible" );
+				assessment_cb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				assessment_cb << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				assessment_cb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				assessment_cb << Horizontal Alignment( "Default" );
+				assessment_cb << Set Items(
+					{"The customer bought the wrong item.",
+					"The product is no longer needed.",
+					"The product did not match its description.",
+					"The customer wasn’t familiar with the product.",
+					"A gift purchase was incorrect.",
+					"The customer didn’t want the item.",
+					"The product was damaged upon arrival.",
+					"The merchant shipped the wrong item.",
+					"NSF - Not Sufficient Funds",
+					"There was insufficient evidence to suspect a drug effect.",
+					"UCF - Uncollected Funds Hold",
+					"UTLA - Unable to Locate Account",
+					"Altered/Fictitious Item/Suspected Counterfeit/Counterfeit",
+					"Item Exceeds Stated Max Value",
+					"Not Authorized (Includes Drafts)–Unauthorized item such as a draft",
+					"Other:"}
+				);
+				assessment_cb << Set Function( assessment_cbChange );
+				assessment_cb << Set Min Size( 414, 288 );
+				assessment_cb << Set Max Size( 414, 288 );
+				assessment_cb << Set Auto Stretching( ., . );
+				Text1 << Vertical Alignment( "Default" );
+				Text1 << Background Color( 2147483647 );
+				Text1 << Text Color( 2147483647 );
+				Text1 << Visibility( "Visible" );
+				Text1 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text1 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text1 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Text1 << Horizontal Alignment( "Default" );
+				Text1 << Set Text( "Overall Comment:" );
+				Text1 << Bullet point( 0 );
+				Text1 << Font Color( 0 );
+				Text1 << Justify Text( "Left" );
+				Text1 << Rotate Text( "Horizontal" );
+				Text1 << Set Width( -1 );
+				Text1 << Set Wrap( 360 );
+				Text1 << Set Tip( "" );
+				Text1 << Set Min Size( 107, 18 );
+				Text1 << Set Max Size( 107, 18 );
+				Text1 << Set Auto Stretching( ., . );
+				general_comment_teb << Vertical Alignment( "Default" );
+				general_comment_teb << Background Color( 2147483647 );
+				general_comment_teb << Text Color( 2147483647 );
+				general_comment_teb << Visibility( "Visible" );
+				general_comment_teb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				general_comment_teb << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				general_comment_teb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				general_comment_teb << Horizontal Alignment( "Default" );
+				general_comment_teb << Set Text( "" );
+				general_comment_teb << Bullet point( 0 );
+				general_comment_teb << Font Color( 0 );
+				general_comment_teb << Justify Text( "Left" );
+				general_comment_teb << Rotate Text( "Horizontal" );
+				general_comment_teb << Set Width( 800 );
+				general_comment_teb << Set Wrap( 800 );
+				general_comment_teb << Set Tip( "" );
+				general_comment_teb << Set Lock( 0 );
+				general_comment_teb << Set PW Style( 0 );
+				general_comment_teb << Set Hint( "" );
+				general_comment_teb << Set Min Size( 800, 23 );
+				general_comment_teb << Set Max Size( 800, 23 );
+				general_comment_teb << Set Auto Stretching( ., . );
+			)
+		)
+	),
+	Initialize(
+		Module1 << Auto Launch( 1 );
+		Module1 << Set Module Type( "Report" );
+		Module1 << Set Window Title( "^APPNAME" );
+		Module1 << Set Min Size( 0, 0 );
+		Module1 << Set Max Size( 30000, 30000 );
+		Module1 << Set Auto Stretching( ., . );
+	)
+)

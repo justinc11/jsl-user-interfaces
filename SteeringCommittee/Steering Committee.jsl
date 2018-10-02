@@ -1,0 +1,68 @@
+names default to here(1);
+
+sfile = "Steering Committee 2018.jmp";
+
+sdt = open(sfile, invisible);
+
+name_list    = sdt:Name       << get values;
+photo_list   = sdt:Photo      << get values;
+thumb_list   = sdt:Thumbnail  << get values;
+company_list = sdt:Company    << get values;
+bio_list     = sdt:Biography  << get values;
+
+// -----------------------------------------------------------------------------
+// Example 1: Expand single row
+nw = new window("Steering Committee App 3",
+	vlistbox(
+		tb = text box("2018 Steering Committee"),
+		hlistbox(
+			panel box("Members",
+				committee_tbox = table box(
+					string col box("Name", name_list),
+					string col box("Company", company_list),
+				),
+			),
+			panel box("Member Information",
+				hlistbox(
+					vlistbox(
+						ntb = text box(""),		// Name
+						ctb = text box(""),		// Company
+						btb = text box(""),		// Biography
+					),
+					mpb = picture box(),		// Member Picture
+				),
+			),
+		),
+	),
+);
+
+tb << set font style("Italic") << font color("Dark Blue") << set font("Stencil", 24)
+	<< set width(450);
+committee_tbox << set underline headings(1) << set heading column borders(1) 
+	<< set column borders(1) << set row borders(1) << set shade alternate rows(1)
+	<< set selectable rows(1);
+
+// Set colors and fonts to mimic the website
+ntb << font color("Orange") << set font("Tahoma", 18);
+ctb << set font style("Bold") << set font("Tahoma", 12) << set width(600);
+btb << set width(600) << set font("Tahoma", 12) << font color("Dark Gray");
+
+// Define a row change function that displays individual details in the member
+// information panel box
+committee_tbox << set row change function(
+	Function( {this},
+		row_list = this << get selected rows;
+		if (nrows(row_list) > 0,
+			k = row_list[1];			// Only display the first row
+			one_name    = name_list[k];
+			one_photo   = photo_list[k];
+			one_company = company_list[k];
+			one_bio     = bio_list[k];
+
+			ntb << set text(one_name);
+			ctb << set text(one_company);
+			btb << set text(one_bio);
+			mpb << set image(one_photo);
+		);
+	);
+);

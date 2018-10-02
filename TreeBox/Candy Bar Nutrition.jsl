@@ -1,0 +1,91 @@
+dt = Open( "$SAMPLE_DATA/Candy Bars.jmp", "invisible" );
+
+candyDataNames = {"Serving/pkg", "Oz/pkg", "Calories", "Total fat g", "Saturated fat g", "Cholesterol g", "Sodium mg",
+							"Carbohydrate g", "Dietary fiber g", "Sugars g", "Protein g", "Vitamin A %RDI", "Vitamin C %RDI",
+							"Calcium %RDI", "Iron %RDI"};
+
+roots = {};
+
+// get unique list of brands
+Summarize( dt, brands = By( :Brand ) );
+
+// create a root node for each brand
+For( i = 1, i <= NItems( brands ), i++,
+	r = dt << Get Rows Where( :Brand == brands[i] );
+	
+	brandData = {};
+	brandSummaryData = [=>];
+	brandSummaryData["Name"] = brands[i];
+	brandSummaryData["Favorite"] = 0;
+	node = Tree Node( brands[i] );
+	// add a candy bar for each name in the brand
+	For( j = 1, j <= N Row( r ), j++,
+		rowNum = r[j];
+		data = [=>];
+		data["Name"] = Column( dt, "Name" )[rowNum];
+		data["Favorite"] = 0;
+		For( iCol = 1, iCol <= N Items( candyDataNames ), iCol++,
+			data[candyDataNames[iCol]] = Column( dt, candyDataNames[iCol] )[rowNum];
+		);
+		candyNode = Tree Node( data["Name"] );
+		candyNode << Set Data( data );
+		node << Append( candyNode );
+		
+		Insert Into( brandData, data );
+	);
+	For( iCol = 1, iCol <= N Items( candyDataNames ), iCol++,
+		brandSummaryData[candyDataNames[iCol]] = Mean( brandData << Get Value( candyDataNames[iCol] ) );
+	);
+	node << Set Data( brandSummaryData );
+	node << Set Label( brandSummaryData["Name"] || " (" || Char( N Items( brandData ) ) || ")" );
+	Insert Into( roots, node );
+);
+
+New Window( "Candy Bars",
+	H Splitter Box(
+		Size( 500, 500 ),
+		candy_tree = Tree Box(
+			roots,
+			<<Set Node Select Script(
+				Function( {tree, node},
+					{data},
+					data = node << Get Data();
+					if( tree << Is Root( node ),
+						tb << Set Text( data["Name"] || " (Summary)" ),
+						tb << Set Text( data["Name"] );
+					);
+					scb << Set( data << Get Values( candyDataNames ) );
+					fav_chk << Set( 1, data["Favorite"] );
+				)
+			),
+			<<Set Max Size( 1000, 1000 ),
+			<<Set Min Size( 500, 500 ),
+			<<Set AutoStretching( 1, 1 )
+		),
+		V List Box(
+			tb = Text Box( "", <<Set Base Font( "Title" ) ),
+			Table Box(
+				String Col Box( "", candyDataNames, <<Background Color( {.9, .9, .9} ) ),
+				scb = Number Col Box( "", {} ),
+				<<Set Shade Headings( 0 )
+			),
+			fav_chk = Check Box( "Favorite",
+				<<Set Function(
+					Function({this},
+						selectedNode = candy_tree << get Selected();
+						
+						IF( !Is Empty( selectedNode ),
+							data = selectedNode << Get Data();
+							data["Favorite"] = this << Get( 1 );
+							selectedNode << Set Data( data );
+						);
+					)
+				)
+			),
+			Spacer Box(),
+			<<Margin( {5, 5, 5, 5} )
+		)
+	)
+);
+
+candy_tree << Set Selected( roots[1] );

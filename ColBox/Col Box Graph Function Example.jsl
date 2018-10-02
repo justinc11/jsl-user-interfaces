@@ -1,0 +1,47 @@
+/* Col Box Graph Function Example.jsl
+
+Show function plots in a col box
+*/
+gb1 = Graph Box(
+	FrameSize( 60, 30 ),
+	XName( "X" ),
+	YName( "Y" ),
+	X Scale( 0, 5 * Pi() ),
+	Y Scale( -1, 1 )
+);
+
+gb1 << Set Graphics Script( Y Function( Sin( x ), x ) );
+
+gb2 = Graph Box(
+	FrameSize( 60, 30 ),
+	XName( "X" ),
+	YName( "Y" ),
+	X Scale( 0, 5 * Pi() ),
+	Y Scale( -1, 1 )
+);
+
+gb2 << Set Graphics Script( Y Function( cos( x ), x ) );
+
+gb3 = Graph Box(
+	FrameSize( 60, 30 ),
+	XName( "X" ),
+	YName( "Y" ),
+	X Scale( 0, 5 * Pi() ),
+	Y Scale( -1, 1 )
+);
+
+gb3 << Set Graphics Script( Y Function( tan( x ), x ) );
+
+nw = New Window( "Test",
+	tb = table box(
+		string col box("Function", {"Sin", "Cos", "Tan"}),
+		col box("Graphs",
+			gb1,
+			gb2,
+			gb3
+		)
+	)
+);
+
+tb << set underline headings(1) << set heading column borders(1) << set column borders(1) 
+   << set row borders(1) << set shade alternate rows(1);

@@ -1,0 +1,188 @@
+Names Default To Here( 1 );
+
+filterMovies = Function( {this, searchText},
+	{filtered_movies, i},
+	// only attempt to filter if there is any text
+	If( searchText != "",
+		// new list for movies that match searchText
+		filtered_movies = {};
+		// Check if each movie matches the given text
+		For( i = 1, i <= N Items( all_movies_list ), i++,
+			// Insert to our list if it contains our search text (case insensitive)
+			If( Contains( Lowercase( all_movies_list[i] ), Lowercase( searchText ) ),
+				Insert Into( filtered_movies, all_movies_list[i] );
+			)
+		);
+	,
+		// else show all movies
+		filtered_movies = all_movies_list;
+	);
+	nonFavMovies_lb << Set Items( filtered_movies );
+);
+
+dt = Open( "$SAMPLE_DATA/Movies.jmp", "invisible" );
+
+all_movies_list = Sort List( dt:Movie << Get Values() );
+
+favMoviesPrompt_win = New Window( "Favorite Movies",
+	Show Menu( 0 ),
+	Show Toolbars( 0 ),
+	H List BOx(
+		Panel Box( "Choose your favorite movies",
+			V List Box(
+				
+				Lineup Box( N Col( 3 ),
+					H List Box(
+						Align( "Center" ),
+						Icon Box( "SearchIndex" ),
+						filter_teb = Text Edit Box( "", 
+							<<Set Width( 250 ), 
+							<<Set Text Changed( filterMovies )
+						),
+						Button Box( "",
+							<<Set Icon( "TabClose" ),
+							<<Set Script(
+								// clear the filter and call the callback function
+								filter_teb << Set Text( "" );
+								filterMovies( filter_teb, "" );
+							),
+							<<Set Tip( "Clear Filter" )
+						)
+					),
+					Text Box(),
+					Text Box( "Favorites:" ),
+					nonFavMovies_lb = List Box(
+						all_movies_list,
+						N Lines( 15 )
+					),
+					V List Box(
+						Button Box( "",
+							<<Set Icon( "Next" ),
+							<<Set Script(
+								favMovies_lb << Append( nonFavMovies_lb << Get Selected() );
+							)
+						),
+						Button Box( "",
+							<<Set Icon( "Prev" ),
+							<<Set Script(
+								favMovies_lb << Remove Selected();
+							)
+						),
+						<<Vertical Alignment( "Center" ),
+						<<Margin( {5, 5, 5, 5} )
+					),
+					V List Box(
+						favMovies_lb = List Box( {}, N Lines( 15 ) )
+					)
+				),
+				
+				<<Margin( {5, 5, 5, 5} )
+			)
+		),
+		Panel Box( "Actions",
+			Button Box( "OK", 
+				<<Set Script(
+					buildFavMovieReport( favMovies_lb << Get Items );
+					favMoviesPrompt_win << Close Window();
+				)
+			),
+			Button Box( "Cancel", favMoviesPrompt_win << Close Window(); )
+		)
+	)
+);
+
+
+
+buildFavMovieReport = Function( {favMovies},
+	{r, dt_sub},
+	r = dt << Get Rows Where( Contains( favMovies, :Movie ) );
+	dt_sub = dt << Subset( Selected Rows( 0 ), Rows( r ), Selected columns only( 0 ), "private" );
+	Eval(
+		Eval Expr(
+			New Window( "Favorite Movie Report",
+				<<On Close( Close( Expr( dt_sub ), "NoSave" ) ), // EvalExpr so we don't need a symbol kept around
+				H Splitter Box(					
+					Size( 1200, 800 ),
+				dt_sub << Distribution(
+					Nominal Distribution( Column( :Movie ), Histogram( 0 ) ),
+					SendToReport(
+						Dispatch( {}, "Distributions", OutlineBox, {Set Title( "" )} ),
+						Dispatch( {}, "Movie", OutlineBox, {Set Title( "" )} ),
+						Dispatch( {"Movie"}, "Frequencies", OutlineBox, {Set Title( "" )} ),
+						Dispatch(
+							{"Movie", "Frequencies"},
+							"",
+							TableBox,
+							{Set Shade Headings( 0 )}
+						),
+						Dispatch(
+							{"Movie", "Frequencies"},
+							"Level ",
+							StringColBox,
+							{Set Heading( "Movie" )}
+						),
+						Dispatch(
+							{"Movie", "Frequencies"},
+							"Count",
+							NumberColBox,
+							{Visibility( "Collapse" )}
+						),
+						Dispatch(
+							{"Movie", "Frequencies"},
+							"Prob",
+							NumberColBox,
+							{Visibility( "Collapse" )}
+						)
+					)
+				),
+				V Splitter Box(
+					H Splitter Box(
+						dt_sub << Graph Builder(
+							Show Control Panel( 0 ),
+							Variables( X( :Worldwide $ ), Y( :Movie ) ),
+							Elements( Bar( X, Y, Legend( 21 ), Bar Style( "Packed" ) ) ),
+							Fit to Window( "On" ),
+							SendToReport(
+								Dispatch( {}, "Graph Builder", OutlineBox, {Set Title( "" )} ),
+								Dispatch(
+									{},
+									"400",
+									LegendBox,
+									{Legend Position( {21, [-1]} ), Position( {-1} )}
+								)
+							)
+						),
+						dt_sub << Graph Builder(
+							Show Control Panel( 0 ),
+							Variables( X( :Director ) ),
+							Elements( Treemap( X, Legend( 3 ) ) ),
+							Fit to Window( "On" ),
+							SendToReport(Dispatch( {}, "Graph Builder", OutlineBox, {Set Title( "" )} )				)
+						)
+					),
+					H Splitter Box(
+						dt_sub << Graph Builder(
+							Show Control Panel( 0 ),
+							Variables( X( :Rating ) ),
+							Elements( Treemap( X, Legend( 8 ) ) ),
+							Fit to Window( "On" ),
+							SendToReport(
+								Dispatch( {}, "Graph Builder", OutlineBox, {Set Title( "" )} )
+							)
+						),
+						dt_sub << Graph Builder(
+							Show Control Panel( 0 ),
+							Variables( X( :Type ) ),
+							Elements( Treemap( X, Legend( 8 ) ) ),
+							Fit to Window( "On" ),
+							SendToReport(
+								Dispatch( {}, "Graph Builder", OutlineBox, {Set Title( "" )} )
+							)
+						)
+					)
+				)
+				)
+			)
+		)
+	);
+);

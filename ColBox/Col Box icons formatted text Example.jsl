@@ -1,0 +1,53 @@
+/* Col Box icons formatted text Example.jsl
+Display a tablebox containing icons with tooltips, text and formatted text.  Use col boxes
+for the icons and formatted text. */
+icon_list = {"Go", "DebuggerRunWithoutBreakpoints", 
+			"Locked", "WinRelaunchAnalysis", "Excluded", "SASTableMeta", "ColStack", 
+			"DataTableBox", "WinFileNewDT", "SASExportData"};
+word_list = {"The", "quick", "red", "fox", "jumped", "over", "the", "oak", "brown", "log"};
+
+// Main display window
+nw = new window("Test Col Box Justification",
+	tbox = table box(
+		icon_cb   = col box("Status"),
+		string_cb = string col box("Icon Name", icon_list),
+		text_cb   = col box("Sample Text"),
+	)
+);
+
+mb = {};	// Mouse box list
+ic = {};	// Icon box list
+for (i = 1, i <= nitems(icon_list), i++,
+	mb[i] = mouse box(ic[i] = icon box(icon_list[i]));			// Mouse box containing an icon box
+	mb[i] << set tooltip("This icon means " || icon_list[i]);	// Set the tooltip help for the mouse box
+	icon_cb << append(mb[i]);		// Add the mouse box + icon box to the icon_cb col box
+);
+tb = {};	// Text box list
+for (i = 1, i <= nitems(word_list), i++,
+	tb[i] = text box(word_list[i]);
+	text_cb << append(tb[i]);		// Add the text box to the text_cb col box
+);
+
+// Change the appearance of some of the text boxes
+tb[1]  << background color(73) << font color(51) << Set Font Style("Bold");	// Yellow bg, Red fg
+tb[3]  << font color(51);	// Red foreground
+tb[9]  << font color(54);	// Brown foreground
+tb[10] << background color({.8, .8, .8}) 	// Medium gray background
+			<< font color({0, 0, .7}) 		// Dark blue foreground
+			<< Set Font Style("Bold");
+
+// Add some formatting to the tablebox
+tbox << set underline headings(1) << set column borders(1) << set row borders(1)
+   << set shade alternate rows(1);
+
+// Use xpath to add padding to the iconboxes and text boxes, all in one fell swoop
+(icon_cb << xpath("//IconBox")) << Padding( Left( 10 ));
+(text_cb << xpath("//TextBox")) << Padding( Left( 10 ));
+
+// xpath replaces this code:
+/*
+for (i = 1, i <= nitems(ic), i++,
+	ic[i] << Padding( Left( 10 ));
+	tb[i] << Padding( Left( 10 ));
+);
+*/

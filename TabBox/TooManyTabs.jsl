@@ -1,0 +1,108 @@
+/* TooManyTabs.jsl
+
+Compare two different interfaces to present the same information.
+
+User selects one X column and multiple Y columns
+A separate graph is created for each X-Y combination
+
+Approach 1: Show each graph on a separate tab
+
+Approach 2: Show each Y column in a listbox, and when selected show the graph
+*/
+names default to here(1);
+
+open("$sample_data\CrimeData.jmp", invisible); 
+open("$sample_data\Equity.jmp", invisible);
+open("$sample_data\Candy Bars.jmp", invisible);
+
+curdir = Get Default Directory();
+// Preload the table combobox with a list of existing tables
+default_table = current data table() << get name;
+table_list = {};
+
+ntables = ntable();
+For (i = 1, i <= ntables, i++,
+	one_name = Data Table(i) << Get Name;
+	table_list[i] = one_name;
+
+// For the default table load up the columns list box
+	if (one_name == default_table,
+		idefault = i;
+		col_list = data table(i) << get column names (string, "Numeric");
+	);
+);
+
+cw = new window("Define Columns",
+	panel box("Table Information",
+		hlistbox(
+			text box("Select Table: "),
+			table_cb = combo box(table_list,
+				selected_tbl = table_cb << Get Selected;
+				col_list      = data table(selected_tbl) << get column names (string, "Numeric");
+				columns_lb << remove all; 
+				columns_lb << set items(col_list);
+// Clear out the various list boxes
+				xcol_lb    << remove all;
+				ycol_lb    << remove all;
+			)
+		),
+	),
+	panel box("Column Information",
+		hlistbox(
+			columns_lb = list box(col_list),
+			lineup box(
+				x_button = button box("X Column",
+					one_list = columns_lb << get selected;
+					nlist    = nitems(one_list);
+					if (nlist > 0,
+// Clear out anything in this listbox
+						xcol_lb << remove all;
+// Only take the first item selected
+						if (nlist > 1,
+							remove from(one_list, 2, (nlist - 1));
+						);
+// Add the selected column to the list
+						xcol_lb << append(one_list);
+					);	// end if
+				),
+				xcol_lb  = list box(),
+				y_button = button box("Y Column(s)",
+// Add all selected columns to this listbox
+					ycol_lb << append(columns_lb << get selected);
+				),
+				ycol_lb  = list box(),
+				remove_button = button box("Remove",
+// Remove anything highlighted in the xcol, ycol listboxes
+					xcol_lb << removeselected;
+					ycol_lb << removeselected;
+				),
+			)
+		)
+	),
+	panel box("Actions",
+		hlistbox(
+			create_charts_button = button box("Create Charts",
+				selected_tbl = table_cb << Get Selected;
+// Set globals for graph routines
+				::g_dt = data table(selected_tbl);
+				::g_x_col  = xcol_lb << get items;
+				::g_y_cols = ycol_lb << get items;
+// Make the two graph windows
+				include(curdir || "TMT_tabbed_graphs.jsl");
+				include(curdir || "TMT_listbox_graphs.jsl");
+				cw << close window();
+			),
+			exit_button = button box("Exit",
+				cw << close window();
+			)
+		)
+	)
+);
+
+table_cb << set (idefault);
+xcol_lb  << set max selected(1);
+x_button << set icon("Next");
+y_button << set icon("Next");
+remove_button << set icon("Prev") << Set Icon Location( "left" );
+create_charts_button << set icon("Overlay");
+exit_button << set icon("Stop");

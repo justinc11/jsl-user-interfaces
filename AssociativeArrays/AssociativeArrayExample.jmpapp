@@ -1,0 +1,312 @@
+JMP App(
+	Set Name( "Application" ),
+	Set Description(
+		"An empty workspace for creating custom applications with one or more windows and scripts"
+	),
+	Auto Launch( 1 ),
+	Snap To Grid( 1 ),
+	Show Grid( 1 ),
+	Show Properties( 1 ),
+	Show Sources( 1 ),
+	Group By Category( 1 ),
+	Dashboard Mode( 0 ),
+	Parameters,
+	Tables,
+	Script(JSL Quote(// This script is executed when the application is run.
+// Named objects have been created for the application modules
+// (for example, "Module1") and the pre-defined object
+// "thisApplication" refers to the application object itself.
+// Variables and functions declared here are scoped to the
+// Application namespace.
+
+)	),
+	Allocate(
+		Module1 = Plan(
+			PreAllocate,
+			Script(JSL Quote(// This script is executed when a new module instance is
+// created.  The pre-defined object "thisModuleInstance" refers
+// to the instance object, but other objects such as boxes and
+// scripts have not yet been created.  Variables declared here are
+// scoped to the ModuleInstance namespace.
+
+// This special function will receive parameters passed to CreateInstance()
+OnModuleLoad({},
+);
+
+thisModuleInstance << Create Objects;
+
+// After this point your module instance objects have been created
+// and can be referred to by name (for example, "Button1").
+//------------------------------------------------------------------------------
+
+product_lb    << set selected(1, 1) << set width(110) << set height(165);
+one_product   = "Tomato";
+prev_product  = "Tomato";
+return_panel  << set title("Select the desired " || one_product || " return reason");
+
+// Use an associative array to store the return checkboxes for each product name
+n_return     = nitems(return_cb << get items());
+empty_list   = j(n_return, 1, 0);		// Create a one-dimensional matrix of 0s
+return_aa    = associative array();
+product_list = product_lb << get items;
+
+
+for (i = 1, i <= nitems(product_list), i++,
+	one_product = product_list[i];
+	return_aa[one_product] = empty_list;
+);
+//print(return_aa);
+
+//------------------------------------------------------------------------------
+product_lbSelect = Function( {this},
+	{selectedIndex},
+	one_product_list = this << get selected;
+	If( N Items( one_product_list ) > 0,
+		one_product = one_product_list[1];
+		return_panel << set title(
+			"Select the desired " || one_product || " return reason"
+		);
+		For( i = 1, i <= n_return, i++,
+			return_cb << set( i, return_aa[one_product][i] )
+		);
+		prev_product = one_product;
+	);
+);
+
+//------------------------------------------------------------------------------
+return_cbChange = Function( {this, index},
+	{selected},
+	one_product_list = product_lb << get selected;
+	If( N Items( one_product_list ) > 0,
+		one_product = one_product_list[1]
+	);
+	one_checked = this << get( index );
+	return_aa[one_product][index] = one_checked;
+);
+
+//------------------------------------------------------------------------------
+ok_buttonPress = Function( {this},
+	this << close window
+);
+
+//------------------------------------------------------------------------------
+cancel_buttonPress = Function( {this},
+	this << close window
+);
+)			),
+			Allocate(
+				List2 = V List Box();
+				Panel1 = Panel Box();
+				List1 = H List Box();
+				ok_button = Button Box();
+				cancel_button = Button Box();
+				List3 = H List Box();
+				Panel2 = Panel Box();
+				product_lb = List Box();
+				return_panel = Panel Box();
+				List4 = V List Box();
+				return_cb = Check Box();
+			),
+			Organize(
+				Reparent( List4( return_cb ) );
+				Reparent( return_panel( List4 ) );
+				Reparent( List3( return_panel ) );
+				Reparent( Panel2( product_lb ) );
+				Reparent( List3( Panel2 ) );
+				Reparent( List2( List3 ) );
+				Reparent( List1( cancel_button ) );
+				Reparent( List1( ok_button ) );
+				Reparent( Panel1( List1 ) );
+				Reparent( List2( Panel1 ) );
+				Relocate( List2( 10, 10 ) );
+			),
+			Initialize(
+				List2 << Background Color( 2147483647 );
+				List2 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List2 << Enabled( 1 );
+				List2 << Horizontal Alignment( "Default" );
+				List2 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List2 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List2 << Text Color( 2147483647 );
+				List2 << Vertical Alignment( "Default" );
+				List2 << Visibility( "Visible" );
+				List2 << set horizontal( 0 );
+				Panel1 << Background Color( 2147483647 );
+				Panel1 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Enabled( 1 );
+				Panel1 << Horizontal Alignment( "Default" );
+				Panel1 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel1 << Text Color( 2147483647 );
+				Panel1 << Vertical Alignment( "Default" );
+				Panel1 << Visibility( "Visible" );
+				Panel1 << Set Title( "Actions" );
+				List1 << Background Color( 2147483647 );
+				List1 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Enabled( 1 );
+				List1 << Horizontal Alignment( "Default" );
+				List1 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List1 << Text Color( 2147483647 );
+				List1 << Vertical Alignment( "Default" );
+				List1 << Visibility( "Visible" );
+				List1 << set horizontal( 1 );
+				ok_button << Background Color( 2147483647 );
+				ok_button << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				ok_button << Enabled( 1 );
+				ok_button << Horizontal Alignment( "Default" );
+				ok_button << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				ok_button << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				ok_button << Text Color( 2147483647 );
+				ok_button << Vertical Alignment( "Default" );
+				ok_button << Visibility( "Visible" );
+				ok_button << Set Button Name( "OK" );
+				ok_button << Style( "Normal" );
+				ok_button << Set( 0 );
+				ok_button << Set Icon( "Go" );
+				ok_button << Set Icon Location( "Right" );
+				ok_button << Set Function( ok_buttonPress );
+				ok_button << Set Min Size( 60, 29 );
+				ok_button << Set Max Size( 60, 29 );
+				ok_button << Set Auto Stretching( 0, 0 );
+				cancel_button << Background Color( 2147483647 );
+				cancel_button << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				cancel_button << Enabled( 1 );
+				cancel_button << Horizontal Alignment( "Default" );
+				cancel_button << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				cancel_button << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				cancel_button << Text Color( 2147483647 );
+				cancel_button << Vertical Alignment( "Default" );
+				cancel_button << Visibility( "Visible" );
+				cancel_button << Set Button Name( "Cancel" );
+				cancel_button << Style( "Normal" );
+				cancel_button << Set( 0 );
+				cancel_button << Set Icon( "Stop" );
+				cancel_button << Set Icon Location( "Right" );
+				cancel_button << Set Function( cancel_buttonPress );
+				cancel_button << Set Min Size( 79, 29 );
+				cancel_button << Set Max Size( 79, 29 );
+				cancel_button << Set Auto Stretching( 0, 0 );
+				List3 << Background Color( 2147483647 );
+				List3 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Enabled( 1 );
+				List3 << Horizontal Alignment( "Default" );
+				List3 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List3 << Text Color( 2147483647 );
+				List3 << Vertical Alignment( "Default" );
+				List3 << Visibility( "Visible" );
+				List3 << set horizontal( 1 );
+				Panel2 << Background Color( 2147483647 );
+				Panel2 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Enabled( 1 );
+				Panel2 << Horizontal Alignment( "Default" );
+				Panel2 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				Panel2 << Text Color( 2147483647 );
+				Panel2 << Vertical Alignment( "Default" );
+				Panel2 << Visibility( "Visible" );
+				Panel2 << Set Title( "Product Name" );
+				product_lb << Background Color( 2147483647 );
+				product_lb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Enabled( 1 );
+				product_lb << Horizontal Alignment( "Default" );
+				product_lb << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				product_lb << Text Color( 2147483647 );
+				product_lb << User Resizable( {1, 1} );
+				product_lb << Vertical Alignment( "Default" );
+				product_lb << Visibility( "Visible" );
+				product_lb << Set Items(
+					{"Tomato", "Peach", "Cantaloupe", "Squash", "Watermelon",
+					"Carrot", "Lettuce", "Cucumber"}
+				);
+				product_lb << Set Max Selected( 1 );
+				product_lb << Set Size( 76, 188 );
+				product_lb << Set N Lines( 8 );
+				product_lb << Set Function( product_lbSelect );
+				product_lb << Set Base Font( "Text" );
+				product_lb << Set Font Scale( 1 );
+				product_lb << Set Min Size( 76, 188 );
+				product_lb << Set Max Size( 76, 188 );
+				product_lb << Set Auto Stretching( 0, 0 );
+				return_panel << Background Color( 2147483647 );
+				return_panel << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Enabled( 1 );
+				return_panel << Horizontal Alignment( "Default" );
+				return_panel << Margin(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_panel << Text Color( 2147483647 );
+				return_panel << Vertical Alignment( "Default" );
+				return_panel << Visibility( "Visible" );
+				return_panel << Set Title( "Select the desired return reason" );
+				List4 << Background Color( 2147483647 );
+				List4 << Border( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List4 << Enabled( 1 );
+				List4 << Horizontal Alignment( "Default" );
+				List4 << Margin( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List4 << Padding( {Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )} );
+				List4 << Text Color( 2147483647 );
+				List4 << Vertical Alignment( "Default" );
+				List4 << Visibility( "Visible" );
+				List4 << set horizontal( 0 );
+				return_cb << Background Color( 2147483647 );
+				return_cb << Border(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_cb << Enabled( 1 );
+				return_cb << Horizontal Alignment( "Default" );
+				return_cb << Margin(
+					{Left( 2 ), Top( 2 ), Right( 2 ), Bottom( 2 )}
+				);
+				return_cb << Padding(
+					{Left( 0 ), Top( 0 ), Right( 0 ), Bottom( 0 )}
+				);
+				return_cb << Text Color( 2147483647 );
+				return_cb << Vertical Alignment( "Default" );
+				return_cb << Visibility( "Visible" );
+				return_cb << Set Items(
+					{"Rotten", "Past sell-by date", "Funny smell", "Discolorations",
+					"Insect parts found", "Moldy", "Broken parts", "Gone to seed",
+					"Other"}
+				);
+				return_cb << Set Function( return_cbChange );
+				return_cb << Set Min Size( 155, 207 );
+				return_cb << Set Max Size( 155, 207 );
+				return_cb << Set Auto Stretching( 0, 0 );
+			)
+		)
+	),
+	Initialize(
+		Module1 << Auto Launch( 1 );
+		Module1 << Set Module Type( "Report" );
+		Module1 << Set Window Title( "^TABLENAME - ^APPNAME" );
+		Module1 << Set Min Size( 0, 0 );
+		Module1 << Set Max Size( 30000, 30000 );
+		Module1 << Set Auto Stretching( ., . );
+	)
+)

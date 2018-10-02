@@ -1,0 +1,31 @@
+// TooManyTabs_Graphs.jsl
+// Display all graphs using a tab box
+names default to here(1);
+
+dt    = open("$sample_data\CrimeData.jmp", invisible); 
+xcol  = "Year";
+ycols = {"Population", "Total Rate", "Violent Rate", "Property Rate", "Murder Rate",
+"Rape Rate", "Robbery Rate", "Agg-Aslt Rate", "Burglary Rate", "Larceny Rate",
+"MVTheft Rate", "Murder", "Rape", "Robbery", "Agg-Aslt", "Burglary", "Larceny",
+"MVTheft", "Total", "Violent", "Property", "Latitude", "Longitude"};
+
+gw = new window("Graphical Output",
+	outlinebox(xcol || " vs:",
+		tb = tab box()
+	)
+);
+
+for(i = 1, i <= nitems(ycols), i++,
+	ycol = ycols[i];
+	tb << add(ycol, vlistbox(
+		dt << Graph Builder(
+			Size( 530, 450 ),
+			Show Control Panel( 0 ),
+			Variables( X( as column( xcol ) ), Y( as column( ycol ) ) ),
+			Elements( Points( X, Y, Legend( 5 ) ), Smoother( X, Y, Legend( 6 ) ) )
+		),
+	));
+
+);
+
+tb << set selected(1);

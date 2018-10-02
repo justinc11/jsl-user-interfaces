@@ -1,0 +1,63 @@
+// Listbox_Graphs.jsl
+// Display one graph at a time using a listbox to select which one
+names default to here(1);
+
+dt    = open("$sample_data\CrimeData.jmp", invisible); 
+xcol  = "Year";
+ycols = {"Population", "Total Rate", "Violent Rate", "Property Rate", "Murder Rate",
+"Rape Rate", "Robbery Rate", "Agg-Aslt Rate", "Burglary Rate", "Larceny Rate",
+"MVTheft Rate", "Murder", "Rape", "Robbery", "Agg-Aslt", "Burglary", "Larceny",
+"MVTheft", "Total", "Violent", "Property", "Latitude", "Longitude"};
+
+gb_expr = {};
+for(i = 1, i <= nitems(ycols), i++,
+	ycol = ycols[i];
+// Define an array of graph builder expressions, one for each y column
+	one_expr = evalinsert(
+"\[gb_expr[^i^] = expr(
+		dt << Graph Builder(
+			Show Control Panel( 0 ),
+			Variables( X( :Name( "^xcol^" ) ), Y( :Name( "^ycol^" ) ) ),
+			Elements( Points( X, Y, Legend( 5 ) ), Smoother( X, Y, Legend( 6 ) ) )
+		),
+	);
+]\");
+
+
+	eval(parse(one_expr));
+);
+
+// Code to run when a different y variable is selected
+y_list_expr = expr(
+	y_mtx = y_lb << get selected indices;
+	y_i   = y_mtx[1];
+	hlb << delete;
+	vlb << append(
+		hlb = hlistbox(
+			eval(gb_expr[y_i])
+		)
+	);
+);
+
+gw = new window("Graphical Output",
+	hlistbox(
+		panel box(
+			xcol || " vs:",
+			y_lb = list box(ycols,
+				width(250),
+				nlines(20),
+				max selected(1),
+				y_list_expr,
+			)
+		),
+		panel box("Graph",
+			vlb = vlistbox(
+				hlb = hlistbox(
+					eval(gb_expr[1]),
+				)
+			)
+		)
+	)
+);
+
+y_lb << set selected(1);

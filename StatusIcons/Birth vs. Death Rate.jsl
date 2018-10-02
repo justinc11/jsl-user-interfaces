@@ -1,0 +1,32 @@
+Names Default To Here( 1 );
+
+dt = Open( "$SAMPLE_DATA/Birth Death.jmp", "invisible" );
+
+Summarize( dt, {regions, countries, birthRates, deathRates} = By( :Region, :country, :birth, :death ) );
+
+New Window("2009 Birth & Death Rates",
+	Outline Box( "2009 Birth & Death Rates", 
+		Table Box(
+			String Col Box( "Region", regions ),
+			String Col Box( "Country", countries ),
+			String Col Box( "Birth Rate", birthRates ),
+			String Col Box( "Death Rate", deathRates ),
+			cb = Col Box( "" ),
+			<<Set Selectable Rows(),
+			<<Set Scrollable( 20, 0 )
+		)
+	)
+);
+
+For( i = 1, i <= N Items( birthRates ), i++,
+	iconName = If( Num( birthRates[i] ) >= Num( deathRates[i] ),
+		"TriangleUpHover", //"CheckCircle",
+		"TriangleDownNormal" //"ErrorSmall"
+	);
+	cb << Append( 
+		Mouse Box( 
+			Icon Box( iconName ),
+			<<Set Tooltip( "Birth/Death Rate Ratio: " || Char( Num( birthRates[i] ) / Num( deathRates[i] ) ) )
+		)
+	);
+);

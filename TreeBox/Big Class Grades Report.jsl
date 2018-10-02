@@ -1,0 +1,169 @@
+
+families_dt = Open( "$SAMPLE_DATA\Big Class Families.jmp", "invisible" );
+
+// Delete the two ROBERTs. We don't like them.
+r = families_dt << Get Rows Where( :name == "ROBERT" );
+families_dt << Delete Rows( r );
+
+grades_dt = Open( "Big Class Grades.jmp" );
+
+studentAttributes = families_dt << Get Column Names( "String" );
+allStudentNodes = {};
+For Each Row(
+	families_dt,
+	studentNode = Tree Node( :name );
+	
+	studentData = Associative Array(
+		studentAttributes, //keys
+		families_dt[Row(), studentAttributes]
+	);
+	
+	r = grades_dt << Get Rows Where( :name == "KATIE" );//studentData["name"] );
+	
+	studentGrades = grades_dt[r, {"semester", "course", "grade"}];
+	
+	For( i = 1, i <= N Items( studentGrades ), i++,
+		If( i == 1 | studentGrades[i - 1][1] != studentGrades[i][1], 
+			
+			currentNode = Tree Node( studentGrades[i][1] );
+			studentNode << Append( currentNode );
+			data = [=> ];
+		);
+		
+		data[studentGrades[i][2]] = studentGrades[i][3];
+		currentNode << Set Data( data );
+	);
+	
+	
+	studentNode << Set Data( studentData );
+	Insert Into( allStudentNodes, studentNode );
+);
+
+New Window( "Student Grades Report",
+	H List Box(
+		Tree Box(
+			allStudentNodes,
+			Size( 200, 600 ),
+			<<Set Node Select Script(
+				Function( {tree, node},
+					If( tree << is root( node ),
+						data = node << Get Data();
+						gradeInfo = [=> ];
+						child = node << First Child();
+						While( !Is Empty( child ),
+							gradeInfo[child << Get Label()] = child << Get Data();
+							child = child << Sib();
+						);
+					,
+						data = (node << Top Parent) << Get Data();
+						gradeInfo = [=> ];
+						gradeInfo[node << Get Label] = node << Get Data();
+					);
+			
+					{gender, pronoun, posessive} = If( data["sex"] == "F",
+						{"female", "She", "Her"},
+						{"male", "He", "His"}
+					);
+					siblings = Words( data["sibling ages"], ", " );
+					summary_tb << Set Text(
+						Eval Insert(
+							"\[^Titlecase( data["name"] )^ is a ^data["age"]^ year old ^gender^.  ]\" ||
+							"\[^pronoun^ is ^data["height"]^ tall and weighs ^data["weight"]^.  ]\" ||
+							If( N Items( siblings ),
+								"\[^pronoun^ has ^N ITems( siblings )^ siblings who are aged ^data["sibling ages"]^.  ]\",
+								""
+							) ||
+							"\[^posessive^ favorite sports are ^data["sports"]^ and ^Lowercase( pronoun )^ has been to the following countries: ^data["countries visited"]^.]\"
+						)
+					);
+			
+					studentPic_pb << Set Image( data["picture"] );
+					name_tb << Set TExt( data["name"] );
+					age_tb << Set TExt( Char( data["age"] ) );
+					sex_tb << Set TExt( data["sex"] );
+					height_tb << Set TExt( Char( data["height"] ) );
+					weight_tb << Set TExt( Char( data["weight"] ) );
+					siblings_tb << Set TExt( data["sibling ages"] );
+			
+					sports_scb << Set( Words( data["sports"], ", " ) );
+					countries_scb << Set( Words( data["countries visited"], ", " ) );
+					cars_scb << Set( Words( data["family cars"], ", " ) );
+			
+					gradeChild = grades_vlb << Child();
+			
+					While( !Is Empty( gradeChild ),
+						gradeChild << Delete Box();
+						gradeChild = grades_vlb << Child;
+					);
+			
+					semesters = gradeInfo << Get Keys;
+					For( i = 1, i <= N Items( semesters ), i++,
+						o = Outline Box( semesters[i],
+							t = Table Box(
+								c = String Col Box( "Course", {} ),
+								g = String Col Box( "Grade", {} )
+							)
+						);
+						courses = gradeInfo[semesters[i]] << Get Keys;
+						For( j = 1, j <= N Items( courses ), j++, 
+							c << Add Element( courses[j] );
+							g << Add Element( gradeInfo[semesters[i]][courses[j]] );
+						);
+						grades_vlb << Append( o );
+					);
+				)
+			)
+		),
+		student_pb = Panel Box( "Student",
+			V List Box(
+
+				H List Box(
+	
+					V List Box(
+						summary_tb = Text Box(),
+						Panel Box( "Other",
+							Lineup Box( N Col( 4 ), Spacing( 5 ),
+								Table Box( sports_scb = String Col Box( "Sports", {} ) ),
+								Table Box( countries_scb = String Col Box( "Countries Visited", {} ) ),
+								Table Box( cars_scb = String Col Box( "Family Cars", {} ) ),
+
+							)
+						),
+
+					),
+					Panel Box( "Info",
+						studentPic_pb = Picture Box( Empty(), <<Horizontal Alignment( "Center" ) ),
+						Lineup Box( N Col( 2 ),
+							Text Box( "Name:  " ),
+							name_tb = Text Box(),
+							Text Box( "Age:  " ),
+							age_tb = Text Box(),
+							Text Box( "Sex:  " ),
+							sex_tb = Text Box(),
+							Text Box( "Height:  " ),
+							height_tb = Text Box(),
+							Text Box( "Weight:  " ),
+							weight_tb = Text Box(),
+							Text Box( "Sibling Ages:  " ),
+							siblings_tb = Text Box(),
+
+						),
+
+					),
+
+				),
+				grades_pb = Panel Box( "Grades",
+					V Scroll Box(
+						Size( 200 ),
+						H List Box( grades_vlb = V List Box(), Spacer Box() ),
+						<<Set Auto Stretching( 1, 1 )
+					)
+				)
+			)
+		), 
+
+
+
+	)
+);
+

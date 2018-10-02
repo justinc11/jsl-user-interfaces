@@ -1,0 +1,60 @@
+// TMT_listbox_graphs.jsl
+// Display one graph at a time using a listbox to select which one
+names default to here(1);
+
+dt    = ::g_dt;
+xcol  = ::g_x_col[1];
+ycols = ::g_y_cols;
+
+
+gb_expr = {};
+for(i = 1, i <= nitems(ycols), i++,
+	ycol = ycols[i];
+	one_expr = evalinsert(
+"\[gb_expr[^i^] = expr(
+		dt << Graph Builder(
+			Show Control Panel( 0 ),
+			Variables( X( :Name( "^xcol^" ) ), Y( :Name( "^ycol^" ) ) ),
+			Elements( Points( X, Y, Legend( 5 ) ), Smoother( X, Y, Legend( 6 ) ) )
+		),
+	);
+]\");
+
+	eval(parse(one_expr));
+);
+
+y_list_expr = expr(
+	y_mtx = y_lb << get selected indices;
+	y_i   = y_mtx[1];
+//	show(y_mtx, y_i);
+	hlb << delete;
+	vlb << append(
+		hlb = hlistbox(
+			eval(gb_expr[y_i])
+		)
+	);
+);
+//show(y_list_expr);
+
+gw = new window("Graphical Output",
+	hlistbox(
+		panel box(
+			xcol || " vs:",
+			y_lb = list box(ycols,
+				width(250),
+				nlines(20),
+				max selected(1),
+				y_list_expr,
+			)
+		),
+		panel box("Graph",
+			vlb = vlistbox(
+				hlb = hlistbox(
+					eval(gb_expr[1]),
+				)
+			)
+		)
+	)
+);
+
+y_lb << set selected(1);

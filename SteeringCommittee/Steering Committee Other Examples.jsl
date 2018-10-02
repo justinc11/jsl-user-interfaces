@@ -1,0 +1,118 @@
+names default to here(1);
+
+sfile = "Steering Committee 2018.jmp";
+
+sdt = open(sfile, invisible);
+
+name_list    = sdt:Name       << get values;
+photo_list   = sdt:Photo      << get values;
+thumb_list   = sdt:Thumbnail  << get values;
+company_list = sdt:Company    << get values;
+bio_list     = sdt:Biography  << get values;
+
+// -----------------------------------------------------------------------------
+// Example 2: full size photos
+nw = new window("Steering Committee App 1",
+	vlistbox(
+		tb = text box("2018 Steering Committee"),
+		
+		panel box("Members",
+			committee_tbox = table box(
+				string col box("Name", name_list),
+				string col box("Company", company_list),
+				pcb = col box("Photo")
+			),
+		),
+	)
+);
+
+tb << set font style("Italic") << font color("Dark Blue") << set font("Broadway", 24)
+	<< set width(600);
+committee_tbox << set underline headings(1) << set heading column borders(1) << set column borders(1) << set row borders(1) << set shade alternate rows(1);
+
+pb_list = {};
+for (i = 1, i <= nrows(sdt), i++,
+	one_photo = newimage(eval(photo_list[i]));
+	pcb << append(pb_list[i] = one_photo);
+);
+
+// -----------------------------------------------------------------------------
+// Example 3: thumbnail photos
+nw = new window("Steering Committee App 2",
+	vlistbox(
+		tb = text box("2018 Steering Committee"),
+		
+		panel box("Members",
+			committee_tbox = table box(
+				string col box("Name", name_list),
+				string col box("Company", company_list),
+				pcb = col box("Photo")
+			),
+		),
+	)
+);
+
+tb << set font style("Italic") << font color("Dark Blue") << set font("Broadway", 24)
+	<< set width(600);
+committee_tbox << set underline headings(1) << set heading column borders(1) << set column borders(1) << set row borders(1) << set shade alternate rows(1);
+
+pb_list = {};
+for (i = 1, i <= nrows(sdt), i++,
+	one_photo = newimage(eval(photo_list[i]));
+	one_photo << scale(.2);
+	pcb << append(vlistbox(pb_list[i] = one_photo));
+);
+
+/*for (i = 1, i <= nrows(sdt), i++,
+	one_photo = thumb_list[i];
+	pcb << append(pb_list[i] = picture box());
+	pb_list[i] << set image(one_photo);
+);*/
+
+
+// -----------------------------------------------------------------------------
+// Example 3: thumbnail photos with Google Buttons
+
+nw = new window("Steering Committee App 2",
+	vlistbox(
+		tb = text box("2018 Steering Committee"),
+		
+		panel box("Members",
+			committee_tbox = table box(
+				string col box("Name", name_list),
+				string col box("Company", company_list),
+				pcb = col box("Photo"),
+				gcb = col box("Google")
+			),
+		),
+	)
+);
+
+tb << set font style("Italic") << font color("Dark Blue") << set font("Broadway", 24)
+	<< set width(600);
+committee_tbox << set underline headings(1) << set heading column borders(1) << set column borders(1) << set row borders(1) << set shade alternate rows(1);
+
+pb_list = {};
+gb_list = {};
+google_prefix = "https://www.google.com/search?q=";
+for (i = 1, i <= nrows(sdt), i++,
+	one_photo = newimage(eval(photo_list[i]));
+	one_photo << scale(.2);
+	pcb << append(vlistbox(pb_list[i] = one_photo));
+
+/*	one_photo = thumb_list[i];
+	pcb << append(pb_list[i] = picture box());
+	pb_list[i] << set image(one_photo);*/
+
+	search_string = name_list[i] || " " || company_list[i];
+	search_string = substitute(search_string, " ", "+");
+	search_string = substitute(search_string, ",", "+");
+	google_search = google_prefix || search_string;
+
+// Full google search will look like this: https://www.google.com/search?q=Frank+Acito+Kelley+School+of+Business+Indiana+University
+	define_button = evalinsert("\[gb_list[i] = button box("", web("^google_search^"))]\");
+	eval(parse(define_button));
+	gb_list[i] << set icon("Browser");
+
+	gcb << append(gb_list[i]);
+);

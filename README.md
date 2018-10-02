@@ -18,3 +18,84 @@ This  talk  will  show  numerous  examples  of  how  to  use  the  Col  Box  dis
 * Using  hover-help  or  tooltips  
 * Using  tabs  to  declutter  things  
 * Providing  search  functionality  for  long  picklists  to  speed  selection 
+
+## Slides
+![Slide 1](SlideImages/Slide1.PNG)
+
+![Slide 2](SlideImages/Slide2.PNG)
+
+![Slide 3](SlideImages/Slide3.PNG)
+
+![Slide 4](SlideImages/Slide4.PNG)
+
+![Slide 5](SlideImages/Slide5.PNG)
+
+![Slide 6](SlideImages/Slide6.PNG)
+
+![Slide 7](SlideImages/Slide7.PNG)
+
+![Slide 8](SlideImages/Slide8.PNG)
+
+![Slide 9](SlideImages/Slide9.PNG)
+
+![Slide 10](SlideImages/Slide10.PNG)
+
+![Slide 11](SlideImages/Slide11.PNG)
+
+![Slide 12](SlideImages/Slide12.PNG)
+
+![Slide 13](SlideImages/Slide13.PNG)
+
+![Slide 14](SlideImages/Slide14.PNG)
+
+![Slide 15](SlideImages/Slide15.PNG)
+
+![Slide 16](SlideImages/Slide16.PNG)
+
+![Slide 17](SlideImages/Slide17.PNG)
+
+![Slide 18](SlideImages/Slide18.PNG)
+
+![Slide 19](SlideImages/Slide19.PNG)
+
+![Slide 20](SlideImages/Slide20.PNG)
+
+![Slide 21](SlideImages/Slide21.PNG)
+
+![Slide 22](SlideImages/Slide22.PNG)
+
+![Slide 23](SlideImages/Slide23.PNG)
+
+![Slide 24](SlideImages/Slide24.PNG)
+
+![Slide 25](SlideImages/Slide25.PNG)
+
+![Slide 26](SlideImages/Slide26.PNG)
+
+![Slide 27](SlideImages/Slide27.PNG)
+
+![Slide 28](SlideImages/Slide28.PNG)
+
+![Slide 29](SlideImages/Slide29.PNG)
+
+![Slide 30](SlideImages/Slide30.PNG)
+
+![Slide 31](SlideImages/Slide31.PNG)
+
+![Slide 32](SlideImages/Slide32.PNG)
+
+![Slide 33](SlideImages/Slide33.PNG)
+
+![Slide 34](SlideImages/Slide34.PNG)
+
+![Slide 35](SlideImages/Slide35.PNG)
+
+![Slide 36](SlideImages/Slide36.PNG)
+
+![Slide 37](SlideImages/Slide37.PNG)
+
+![Slide 38](SlideImages/Slide38.PNG)
+
+![Slide 39](SlideImages/Slide39.PNG)
+
+![Slide 40](SlideImages/Slide40.PNG)
